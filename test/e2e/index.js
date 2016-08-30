@@ -207,6 +207,75 @@ describe("`On notification`", () => {
         }, {registrationTokens: ["token1", "token2"]});
     });
 
+    it("send FCM push notification to usersId [CASE: users without token]", async () => {
+        const element = {
+            title: "title",
+            message: "message",
+            type: "type",
+            usersId: ["user1", "user2"],
+            data: {
+                data1: "data1",
+                data2: "data2"
+            }
+        };
+        await userCollection.insert({_id: "user1"});
+        await userCollection.insert({_id: "user2"});
+        const event = getEventFromObject(getEvent(element));
+        await handler(event, context);
+        expect(send).to.have.callCount(0);
+    });
+
+    it("send FCM push notification to usersId [CASE: users not exist]", async () => {
+        const element = {
+            title: "title",
+            message: "message",
+            type: "type",
+            usersId: ["user1", "user2"],
+            data: {
+                data1: "data1",
+                data2: "data2"
+            }
+        };
+        const event = getEventFromObject(getEvent(element));
+        await handler(event, context);
+        expect(send).to.have.callCount(0);
+    });
+
+    it("send FCM push notification to usersId [CASE: user with and without token]", async () => {
+        const element = {
+            title: "title",
+            message: "message",
+            type: "type",
+            usersId: ["user1", "user2"],
+            data: {
+                data1: "data1",
+                data2: "data2"
+            }
+        };
+        await userCollection.insert({_id: "user1"});
+        await userCollection.insert({_id: "user2", services: {fcm: {token: "token"}}});
+        const event = getEventFromObject(getEvent(element));
+        await handler(event, context);
+        expect(send).to.have.callCount(1);
+        expect(send).to.have.calledWithExactly({
+            message: {
+                notification: {
+                    title: "title",
+                    body: "message",
+                    icon: "ic_launcher",
+                    sound: "default",
+                    badge: "1",
+                    tag: "type"
+                },
+                data: {
+                    data1: "data1",
+                    data2: "data2"
+                }
+            }
+        }, {registrationTokens: ["token"]});
+    });
+
+
     it("send FCM push notification to usersId [CASE: more than 1000 user]", async () => {
         const users = repeat(1, 2100).map((a, index) => `user${index}`);
         const tokens = repeat(1, 2100).map((a, index) => `token${index}`);
