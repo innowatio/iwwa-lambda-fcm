@@ -1,10 +1,12 @@
+import BPromise from "bluebird";
+
 function objectToBase64 (object) {
     return new Buffer(
         JSON.stringify(object)
     ).toString("base64");
 }
 
-function getRecordFromObject (object) {
+export function getRecordFromObject (object) {
     return {
         "eventID": "shardId-000000000000:00000000000000000000000000000000000000000000000000000000",
         "eventVersion": "1.0",
@@ -30,4 +32,13 @@ export function getEventFromArray (array) {
 
 export function getEventFromObject (object) {
     return getEventFromArray([object]);
+}
+
+export function run (handler, event) {
+    return new BPromise((resolve, reject) => {
+        handler(event, {
+            succeed: resolve,
+            fail: reject
+        });
+    });
 }

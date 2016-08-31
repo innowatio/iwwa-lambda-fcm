@@ -11,7 +11,7 @@ chai.use(sinonChai);
 import {USER_COLLECTION} from "config";
 import fcm from "services/fcm";
 import {handler} from "index";
-import {getEventFromObject} from "../mock";
+import {getEventFromObject, run} from "../mock";
 import mongodb from "services/mongodb";
 
 describe("`On notification`", () => {
@@ -74,11 +74,13 @@ describe("`On notification`", () => {
         send.reset();
     });
 
-    const getEvent = data => ({
-        "id": "eventId",
-        "data": data,
-        "timestamp": 1420070400000,
-        "type": "element inserted in collection notifications"
+    const getEvent = element => ({
+        id: "eventId",
+        data: {
+            element,
+            id: "d0f7c9b4-ef6b-45c8-b216-723e78a6fe72"
+        },
+        type: "element inserted in collection notifications"
     });
 
     it("not send push notification if are not present usersId and topic", async () => {
@@ -88,7 +90,7 @@ describe("`On notification`", () => {
             type: "type"
         };
         const event = getEventFromObject(getEvent(element));
-        await handler(event, context);
+        await run(handler, event);
         expect(send).to.have.callCount(0);
     });
 
@@ -100,7 +102,7 @@ describe("`On notification`", () => {
             type: "type"
         };
         const event = getEventFromObject(getEvent(element));
-        await handler(event, context);
+        await run(handler, event);
         expect(send).to.have.callCount(1);
         expect(send).to.have.calledWithExactly({
             message: {
@@ -125,7 +127,7 @@ describe("`On notification`", () => {
             usersId: ["usersId"]
         };
         const event = getEventFromObject(getEvent(element));
-        await handler(event, context);
+        await run(handler, event);
         expect(send).to.have.callCount(1);
         expect(send).to.have.calledWithExactly({
             message: {
@@ -153,7 +155,7 @@ describe("`On notification`", () => {
             }
         };
         const event = getEventFromObject(getEvent(element));
-        await handler(event, context);
+        await run(handler, event);
         expect(send).to.have.callCount(1);
         expect(send).to.have.calledWithExactly({
             message: {
@@ -187,7 +189,7 @@ describe("`On notification`", () => {
         await userCollection.insert({_id: "user1", services: {fcm: {token: "token1"}}});
         await userCollection.insert({_id: "user2", services: {fcm: {token: "token2"}}});
         const event = getEventFromObject(getEvent(element));
-        await handler(event, context);
+        await run(handler, event);
         expect(send).to.have.callCount(1);
         expect(send).to.have.calledWithExactly({
             message: {
@@ -221,7 +223,7 @@ describe("`On notification`", () => {
         await userCollection.insert({_id: "user1"});
         await userCollection.insert({_id: "user2"});
         const event = getEventFromObject(getEvent(element));
-        await handler(event, context);
+        await run(handler, event);
         expect(send).to.have.callCount(0);
     });
 
@@ -237,7 +239,7 @@ describe("`On notification`", () => {
             }
         };
         const event = getEventFromObject(getEvent(element));
-        await handler(event, context);
+        await run(handler, event);
         expect(send).to.have.callCount(0);
     });
 
@@ -255,7 +257,7 @@ describe("`On notification`", () => {
         await userCollection.insert({_id: "user1"});
         await userCollection.insert({_id: "user2", services: {fcm: {token: "token"}}});
         const event = getEventFromObject(getEvent(element));
-        await handler(event, context);
+        await run(handler, event);
         expect(send).to.have.callCount(1);
         expect(send).to.have.calledWithExactly({
             message: {
@@ -296,7 +298,7 @@ describe("`On notification`", () => {
             }});
         });
         const event = getEventFromObject(getEvent(element));
-        await handler(event, context);
+        await run(handler, event);
         expect(send).to.have.callCount(3);
         expect(send.firstCall).to.have.calledWithExactly({
             message: {

@@ -6,7 +6,7 @@ import log from "./services/logger";
 import getReceivers from "./steps/get-receivers";
 
 export default async function pipeline (event) {
-    const rawElement = event.data;
+    const rawElement = event.data.element;
     if (!rawElement) {
         return null;
     }
