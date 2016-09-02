@@ -32,14 +32,14 @@ describe("`getReceivers` function", () => {
     it("returns topic as receiver if is set topic as input", async () => {
         const topic = "topic";
         const ret = await getReceivers(topic);
-        expect(ret).to.deep.equal([{topic}]);
+        expect(ret).to.deep.equal([topic]);
     });
 
     it("returns topic as receiver if are set usersId and topic as input]", async () => {
         const topic = "topic";
         const usersId = ["userId"];
         const ret = await getReceivers(topic, usersId);
-        expect(ret).to.deep.equal([{topic}]);
+        expect(ret).to.deep.equal([topic]);
     });
 
     it("returns a registrationTokens array as receivers if is set usersId as input [CASE: getTokenId returns the token]", async () => {
@@ -48,7 +48,7 @@ describe("`getReceivers` function", () => {
         const usersId = ["userId", "anotherUserId"];
         getTokenId.returns("token");
         const ret = await getReceivers(null, usersId);
-        expect(ret).to.deep.equal([{registrationTokens: ["token", "token"]}]);
+        expect(ret).to.deep.equal([["token", "token"]]);
     });
 
     it("returns a null if is set usersId as input [CASE: getTokenId returns undefined for all users]", async () => {

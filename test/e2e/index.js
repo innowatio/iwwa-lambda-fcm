@@ -1,4 +1,4 @@
-import {map} from "bluebird";
+import {map, resolve} from "bluebird";
 import chai, {expect} from "chai";
 import chaiAsPromised from "chai-as-promised";
 import {repeat} from "ramda";
@@ -21,35 +21,10 @@ describe("`On notification`", () => {
         fail: sinon.spy()
     };
 
-    class Message {
+    const send = sinon.stub().returns(resolve());
 
-        constructor () {
-            this.message = {};
-        }
-
-        addNotification (notification) {
-            this.message = {...this.message, notification};
-        }
-
-        addData (data) {
-            this.message = {...this.message, data};
-        }
-
-    }
-
-    const send = sinon.spy();
-
-    class Sender {
-
-        send (message, receiver) {
-            return send(message, receiver);
-        }
-
-    }
-
-    const gcm = {
-        Message,
-        Sender
+    const gcm = () => {
+        return {send};
     };
 
     var userCollection;
@@ -105,17 +80,17 @@ describe("`On notification`", () => {
         await run(handler, event);
         expect(send).to.have.callCount(1);
         expect(send).to.have.calledWithExactly({
-            message: {
-                notification: {
-                    title: "title",
-                    body: "message",
-                    icon: "ic_launcher",
-                    sound: "default",
-                    badge: "1",
-                    tag: "type"
-                }
+            priority: "high",
+            delayWhileIdle: true,
+            notification: {
+                title: "title",
+                body: "message",
+                icon: "ic_launcher",
+                sound: "default",
+                badge: "1",
+                tag: "type"
             }
-        }, {topic: "topic"});
+        }, "topic");
     });
 
     it("send FCM push notification to topic [CASE: usersId and topic selected]", async () => {
@@ -130,17 +105,17 @@ describe("`On notification`", () => {
         await run(handler, event);
         expect(send).to.have.callCount(1);
         expect(send).to.have.calledWithExactly({
-            message: {
-                notification: {
-                    title: "title",
-                    body: "message",
-                    icon: "ic_launcher",
-                    sound: "default",
-                    badge: "1",
-                    tag: "type"
-                }
+            priority: "high",
+            delayWhileIdle: true,
+            notification: {
+                title: "title",
+                body: "message",
+                icon: "ic_launcher",
+                sound: "default",
+                badge: "1",
+                tag: "type"
             }
-        }, {topic: "topic"});
+        }, "topic");
     });
 
     it("send FCM push notification to topic [CASE: payload with data]", async () => {
@@ -158,21 +133,21 @@ describe("`On notification`", () => {
         await run(handler, event);
         expect(send).to.have.callCount(1);
         expect(send).to.have.calledWithExactly({
-            message: {
-                notification: {
-                    title: "title",
-                    body: "message",
-                    icon: "ic_launcher",
-                    sound: "default",
-                    badge: "1",
-                    tag: "type"
-                },
-                data: {
-                    data1: "data1",
-                    data2: "data2"
-                }
+            priority: "high",
+            delayWhileIdle: true,
+            notification: {
+                title: "title",
+                body: "message",
+                icon: "ic_launcher",
+                sound: "default",
+                badge: "1",
+                tag: "type"
+            },
+            data: {
+                data1: "data1",
+                data2: "data2"
             }
-        }, {topic: "topic"});
+        }, "topic");
     });
 
     it("send FCM push notification to usersId", async () => {
@@ -192,21 +167,21 @@ describe("`On notification`", () => {
         await run(handler, event);
         expect(send).to.have.callCount(1);
         expect(send).to.have.calledWithExactly({
-            message: {
-                notification: {
-                    title: "title",
-                    body: "message",
-                    icon: "ic_launcher",
-                    sound: "default",
-                    badge: "1",
-                    tag: "type"
-                },
-                data: {
-                    data1: "data1",
-                    data2: "data2"
-                }
+            priority: "high",
+            delayWhileIdle: true,
+            notification: {
+                title: "title",
+                body: "message",
+                icon: "ic_launcher",
+                sound: "default",
+                badge: "1",
+                tag: "type"
+            },
+            data: {
+                data1: "data1",
+                data2: "data2"
             }
-        }, {registrationTokens: ["token1", "token2"]});
+        }, ["token1", "token2"]);
     });
 
     it("send FCM push notification to usersId [CASE: users without token]", async () => {
@@ -243,7 +218,7 @@ describe("`On notification`", () => {
         expect(send).to.have.callCount(0);
     });
 
-    it("send FCM push notification to usersId [CASE: user with and without token]", async () => {
+    it("send FCM push notification to usersId [CASE: one user with and one without token]", async () => {
         const element = {
             title: "title",
             message: "message",
@@ -260,23 +235,22 @@ describe("`On notification`", () => {
         await run(handler, event);
         expect(send).to.have.callCount(1);
         expect(send).to.have.calledWithExactly({
-            message: {
-                notification: {
-                    title: "title",
-                    body: "message",
-                    icon: "ic_launcher",
-                    sound: "default",
-                    badge: "1",
-                    tag: "type"
-                },
-                data: {
-                    data1: "data1",
-                    data2: "data2"
-                }
+            priority: "high",
+            delayWhileIdle: true,
+            notification: {
+                title: "title",
+                body: "message",
+                icon: "ic_launcher",
+                sound: "default",
+                badge: "1",
+                tag: "type"
+            },
+            data: {
+                data1: "data1",
+                data2: "data2"
             }
-        }, {registrationTokens: ["token"]});
+        }, ["token"]);
     });
-
 
     it("send FCM push notification to usersId [CASE: more than 1000 user]", async () => {
         const users = repeat(1, 2100).map((a, index) => `user${index}`);
@@ -301,53 +275,53 @@ describe("`On notification`", () => {
         await run(handler, event);
         expect(send).to.have.callCount(3);
         expect(send.firstCall).to.have.calledWithExactly({
-            message: {
-                notification: {
-                    title: "title",
-                    body: "message",
-                    icon: "ic_launcher",
-                    sound: "default",
-                    badge: "1",
-                    tag: "type"
-                },
-                data: {
-                    data1: "data1",
-                    data2: "data2"
-                }
+            priority: "high",
+            delayWhileIdle: true,
+            notification: {
+                title: "title",
+                body: "message",
+                icon: "ic_launcher",
+                sound: "default",
+                badge: "1",
+                tag: "type"
+            },
+            data: {
+                data1: "data1",
+                data2: "data2"
             }
-        }, {registrationTokens: tokens.slice(0, 1000)});
+        }, tokens.slice(0, 1000));
         expect(send.secondCall).to.have.calledWithExactly({
-            message: {
-                notification: {
-                    title: "title",
-                    body: "message",
-                    icon: "ic_launcher",
-                    sound: "default",
-                    badge: "1",
-                    tag: "type"
-                },
-                data: {
-                    data1: "data1",
-                    data2: "data2"
-                }
+            priority: "high",
+            delayWhileIdle: true,
+            notification: {
+                title: "title",
+                body: "message",
+                icon: "ic_launcher",
+                sound: "default",
+                badge: "1",
+                tag: "type"
+            },
+            data: {
+                data1: "data1",
+                data2: "data2"
             }
-        }, {registrationTokens: tokens.slice(1000, 2000)});
+        }, tokens.slice(1000, 2000));
         expect(send.thirdCall).to.have.calledWithExactly({
-            message: {
-                notification: {
-                    title: "title",
-                    body: "message",
-                    icon: "ic_launcher",
-                    sound: "default",
-                    badge: "1",
-                    tag: "type"
-                },
-                data: {
-                    data1: "data1",
-                    data2: "data2"
-                }
+            priority: "high",
+            delayWhileIdle: true,
+            notification: {
+                title: "title",
+                body: "message",
+                icon: "ic_launcher",
+                sound: "default",
+                badge: "1",
+                tag: "type"
+            },
+            data: {
+                data1: "data1",
+                data2: "data2"
             }
-        }, {registrationTokens: tokens.slice(2000, 2100)});
+        }, tokens.slice(2000, 2100));
     });
 
 });
