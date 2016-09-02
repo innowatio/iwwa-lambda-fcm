@@ -7,7 +7,6 @@ export default function push ({data, title, message, type}, receiver) {
     const fcm = gcm(GOOGLE_SERVER_API_KEY);
     var gcmMessage = {
         priority: "high",
-        delayWhileIdle: true,
         notification: {
             title,
             body: message,
@@ -27,11 +26,6 @@ export default function push ({data, title, message, type}, receiver) {
     log.info("Sending message", gcmMessage);
     // It returns a promise
     return fcm.send(gcmMessage, receiver)
-        .then(response => {
-            log.info("Pushed notification", response);
-            return response;
-        }).catch(err => {
-            log.error("Error pushing notification", {err});
-            return err;
-        });
+        .then(response => log.info("Pushed notification", response))
+        .catch(err => log.error("Error pushing notification", {err}));
 }

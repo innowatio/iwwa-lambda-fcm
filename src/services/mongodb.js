@@ -2,9 +2,10 @@ import {MongoClient} from "mongodb";
 
 import {MONGODB_URL} from "../config";
 
-export default MongoClient.connect(MONGODB_URL, {
+var options = {
     options: {
-        replset: {socketOptions: {connectTimeoutMS: 5000}},
-        server: {socketOptions: {connectTimeoutMS: 5000}}
+        replSet: {socketOptions: {keepAlive: 1, connectTimeoutMS: 30000}}
     }
-});
+};
+
+export default MongoClient.connect(MONGODB_URL, options);
