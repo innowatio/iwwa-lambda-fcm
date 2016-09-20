@@ -9,4 +9,6 @@ services:
 script:
   - npm run lint
   - npm run coverage
-  - codecov
+
+after_success:
+  - npm run codecov
