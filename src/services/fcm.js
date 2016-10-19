@@ -22,10 +22,10 @@ export default function push ({data, title, message, type}, receiver) {
             data
         };
     }
-    log.debug("Sending notification to devices", receiver);
-    log.info("Sending message", gcmMessage);
+    log.debug(receiver, "Sending notification to devices");
+    log.info(gcmMessage, "Sending message");
     // It returns a promise
     return fcm.send(gcmMessage, receiver)
-        .then(response => log.info("Pushed notification", response))
-        .catch(err => log.error("Error pushing notification", {err}));
+        .then(response => log.info(response, "Pushed notification"))
+        .catch(err => log.error({err}, "Error pushing notification"));
 }

@@ -10,18 +10,20 @@ export default async function pipeline (event) {
     if (!rawElement) {
         return null;
     }
-    log.debug("Received push notification request", rawElement);
+    log.debug(rawElement, "Received push notification request");
     // Retrieve the user
     const usersId = rawElement.usersId;
     const topic = rawElement.topic;
     if (isEmpty(usersId) && !topic) {
+        log.info("SKIP EMPTY USER OR TOPIC");
         return null;
     }
     const receivers = await getReceivers(topic, usersId);
     if (!receivers) {
+        log.info("SKIP EMPTY RECEIVER");
         return null;
     }
     await map(receivers, receiver => push(rawElement, receiver));
-    log.info("Pushed notification to all devices", {topic, usersId});
+    log.info({topic, usersId}, "Pushed notification to all devices");
     return null;
 }
