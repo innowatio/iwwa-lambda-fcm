@@ -12,7 +12,7 @@ import {USER_COLLECTION} from "config";
 import fcm from "services/fcm";
 import {handler} from "index";
 import {getEventFromObject, run} from "../mock";
-import mongodb from "services/mongodb";
+import {getMongoClient} from "services/mongodb";
 
 describe("`On notification`", () => {
 
@@ -27,7 +27,7 @@ describe("`On notification`", () => {
 
     before(async () => {
         fcm.__Rewire__("log", log);
-        db = await mongodb;
+        db = await getMongoClient();
         await db.createCollection(USER_COLLECTION);
     });
 
@@ -38,7 +38,7 @@ describe("`On notification`", () => {
 
     beforeEach(async () => {
         userCollection = db.collection(USER_COLLECTION);
-        userCollection.remove();
+        await userCollection.remove();
         log.info.reset();
         log.debug.reset();
         log.error.reset();

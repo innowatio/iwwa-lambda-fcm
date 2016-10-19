@@ -6,7 +6,7 @@ chai.use(chaiAsPromised);
 chai.use(sinonChai);
 
 import {USER_COLLECTION} from "config";
-import mongodb from "services/mongodb";
+import {getMongoClient} from "services/mongodb";
 import getReceivers from "steps/get-receivers";
 
 describe("`getReceivers` function", () => {
@@ -15,7 +15,7 @@ describe("`getReceivers` function", () => {
     var db;
 
     before(async () => {
-        db = await mongodb;
+        db = await getMongoClient();
         getReceivers.__Rewire__("getTokenId", getTokenId);
         await db.createCollection(USER_COLLECTION);
     });
@@ -25,7 +25,8 @@ describe("`getReceivers` function", () => {
         await db.dropCollection(USER_COLLECTION);
     });
 
-    beforeEach(() => {
+    beforeEach(async () => {
+        await db.collection(USER_COLLECTION).remove({});
         getTokenId.reset();
     });
 
@@ -43,8 +44,8 @@ describe("`getReceivers` function", () => {
     });
 
     it("returns a registrationTokens array as receivers if is set usersId as input [CASE: getTokenId returns the token]", async () => {
-        db.collection(USER_COLLECTION).insert({_id: "userId"});
-        db.collection(USER_COLLECTION).insert({_id: "anotherUserId"});
+        await db.collection(USER_COLLECTION).insert({_id: "userId"});
+        await db.collection(USER_COLLECTION).insert({_id: "anotherUserId"});
         const usersId = ["userId", "anotherUserId"];
         getTokenId.returns("token");
         const ret = await getReceivers(null, usersId);
@@ -52,8 +53,8 @@ describe("`getReceivers` function", () => {
     });
 
     it("returns a null if is set usersId as input [CASE: getTokenId returns undefined for all users]", async () => {
-        db.collection(USER_COLLECTION).insert({_id: "userId"});
-        db.collection(USER_COLLECTION).insert({_id: "anotherUserId"});
+        await db.collection(USER_COLLECTION).insert({_id: "userId"});
+        await db.collection(USER_COLLECTION).insert({_id: "anotherUserId"});
         const usersId = ["userId", "anotherUserId"];
         getTokenId.returns(null);
         const ret = await getReceivers(null, usersId);

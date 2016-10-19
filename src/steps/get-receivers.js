@@ -2,7 +2,7 @@ import {map} from "bluebird";
 import {isEmpty, without, splitEvery} from "ramda";
 
 import {USER_COLLECTION} from "config";
-import mongodb from "services/mongodb";
+import {getMongoClient} from "services/mongodb";
 import getTokenId from "./get-token-id";
 
 export default async function getReceivers (topic, usersId) {
@@ -10,7 +10,7 @@ export default async function getReceivers (topic, usersId) {
     if (topic) {
         receiver = [topic];
     } else if (usersId) {
-        const db = await mongodb;
+        const db = await getMongoClient();
         const users = await map(usersId, userId =>
             db.collection(USER_COLLECTION).findOne({_id: userId})
         );
